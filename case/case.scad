@@ -16,7 +16,8 @@ row_dy   = 17.78;     // header rows, 0.7" apart
 hdr_t    = 2.5;       // MEASURE: header plastic thickness under the board
 pin_len  = 6;         // MEASURE: pin length below the plastic
 rail_h   = pin_len + 1.5;
-peg_d    = 1.6;       // into the 2.1 mm mounting holes
+peg_d    = 1.95;      // into the 2.1 mm mounting holes: snug (FDM pins print a bit small)
+peg_tip  = 0.8;       // cone on the end so the pegs find the holes
 usb_w    = 12;  usb_h = 8;   // opening sized for the cable's moulded plug
 
 // Jack breakout: SmartCool "3.5mm Audio Jacks", 16 x 25 (vendor drawing).
@@ -37,6 +38,9 @@ jb_peg_d   = 2.5;     // lid peg into the ~3 mm board hole
 led_x    = 6;   led_y = -4.5;   // from the Pico's USB edge / centreline (approx)
 led_d    = 6;   led_skin = 0.6;
 
+// Snap latch: a ridge on each long side of the lid lip clicks into a groove
+// in the base wall. snap_bite is how far the ridge overlaps the wall.
+snap_len = 24;  snap_r = 0.8;  snap_z = 1.5;  snap_bite = 0.4;
 wall = 2;  floor_t = 2;  lid_t = 2;  clr = 0.4;  gap = 6;  inner_h = 17;
 $fn = 48;
 
@@ -59,6 +63,10 @@ module base() {
     difference() {
         cube([out_l, out_w, out_h]);
         translate([wall, wall, floor_t]) cube([in_l, in_w, inner_h + 1]);
+        // snap grooves for the lid ridges (lid underside sits at out_h)
+        for (y = [wall, out_w - wall])
+            translate([out_l / 2 - snap_len / 2 - 1, y, out_h - snap_z])
+                rotate([0, 90, 0]) cylinder(r = snap_r + 0.15, h = snap_len + 2, $fn = 24);
         // USB
         translate([-1, out_w / 2 - usb_w / 2, pico_top - 1])
             cube([wall + 2, usb_w, usb_h]);
@@ -107,6 +115,11 @@ module lid() {
                     cube([in_l - 2 * clr, in_w - 2 * clr, lip]);
                     translate([1.2, 1.2, -1]) cube([in_l - 2 * clr - 2.4, in_w - 2 * clr - 2.4, lip + 2]);
                 }
+            // snap ridges, middle of each long side where the lip flexes most
+            for (y = [wall + clr, out_w - wall - clr])
+                translate([out_l / 2 - snap_len / 2, y + (y < out_w / 2 ? 1 : -1) * (snap_r - snap_bite - clr),
+                           lid_t + snap_z])
+                    rotate([0, 90, 0]) cylinder(r = snap_r, h = snap_len, $fn = 24);
         }
         // gap in the lip where the USB plug comes in
         translate([wall - 1, out_w / 2 - usb_w / 2, lid_t - 0.02]) cube([3, usb_w, 4]);
@@ -125,7 +138,8 @@ module lid_pegs() {
     for (sx = [-1, 1], sy = [-1, 1])
         translate([pico_x0 + pico_l / 2 + sx * hole_dx / 2, out_w - (out_w / 2 + sy * hole_dy / 2), lid_t - 0.01]) {
             cylinder(d = 4, h = post);
-            cylinder(d = peg_d, h = post + 1.5);
+            cylinder(d = peg_d, h = post + 1.5 - peg_tip);
+            translate([0, 0, post + 1.5 - peg_tip]) cylinder(d1 = peg_d, d2 = 1.2, h = peg_tip);
         }
 }
 

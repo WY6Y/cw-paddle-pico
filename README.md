@@ -53,6 +53,9 @@ one end, jacks out the other. Print both flat, no supports, PETG or PLA.
 - Each jack board sits on ledges, butts against the jack wall (takes plug
   pulls), has a stop behind it (takes plug pushes); lid ribs hold it down.
 - Thin window in the lid over the Pico LED.
+- Lid snaps on: a ridge on each long side of the lid lip clicks into a groove in the
+  base wall (0.4 mm catch). Pry at the USB end to open.
+- Pico pegs are 1.95 mm with a cone tip, snug in the 2.1 mm holes.
 
 Wire by soldering to the header pin stubs on the Pico's top side (GP2-GP5,
 GND); jumpers on the pins underneath won't fit in the rails. Check the values
