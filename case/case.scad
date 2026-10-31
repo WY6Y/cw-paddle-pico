@@ -19,14 +19,19 @@ rail_h   = pin_len + 1.5;
 peg_d    = 1.6;       // into the 2.1 mm mounting holes
 usb_w    = 12;  usb_h = 8;   // opening sized for the cable's moulded plug
 
-// Jack breakout (Amazon: 16 x 25). MEASURE the rest.
+// Jack breakout: SmartCool "3.5mm Audio Jacks", 16 x 25 (vendor drawing).
+// Jack centred across the board at one 16 mm end; straight 5-pin header up
+// at the other; two ~3 mm holes 15.9 from the jack end, 3.52 from each edge.
 jb_l     = 25;        // along the plug axis
 jb_w     = 16;
 jb_t     = 1.6;
 jb_lift  = 3;         // board sits on ledges this high (solder tails below)
-jack_z   = 2.6;       // MEASURE: plug centre above the board's top face
+jack_z   = 2.6;       // MEASURE: plug centre above the board's top face (not on the drawing)
 jack_y   = 0;         // MEASURE: plug centre offset from the board's centreline
-jack_d   = 6.5;       // plug hole; a plug shank is 3.5, its collar ~6
+jack_d   = 7.5;       // plug hole: lets the jack's ~6 mm collar seat in the wall with slack
+jb_hole_x  = 15.9;    // board holes from the jack end
+jb_hole_dy = 16 - 2 * 3.52;
+jb_peg_d   = 2.5;     // lid peg into the ~3 mm board hole
 
 // LED window: thin skin in the lid that glows when a paddle is closed
 led_x    = 6;   led_y = -4.5;   // from the Pico's USB edge / centreline (approx)
@@ -76,10 +81,11 @@ module base() {
     for (i = [0 : n_jacks - 1]) {
         cy = jack_cy(i);
         for (sy = [-1, 1]) {
-            // ledges under the board edges, front and back
+            // ledges under the outer 1.6 mm of each long edge, front and back
+            // (clear of the jack's locating posts and the header's solder tails)
             for (lx = [jb_x0, out_l - wall - 4])
-                translate([lx, cy + sy * (slot_w / 2 - 1.5) - 1.5, floor_t - 0.01])
-                    cube([4, 3, jb_lift]);
+                translate([lx, cy + sy * (slot_w / 2 - 1) - 1, floor_t - 0.01])
+                    cube([4, 2, jb_lift]);
             // guides beside the board
             translate([jb_x0 + 4, cy + (sy < 0 ? -slot_w / 2 - 1.2 : slot_w / 2), floor_t - 0.01])
                 cube([jb_l - 8, 1.2, jb_lift + jb_t + 2]);
@@ -101,11 +107,6 @@ module lid() {
                     cube([in_l - 2 * clr, in_w - 2 * clr, lip]);
                     translate([1.2, 1.2, -1]) cube([in_l - 2 * clr - 2.4, in_w - 2 * clr - 2.4, lip + 2]);
                 }
-            // ribs that press each jack board down onto its ledges
-            for (i = [0 : n_jacks - 1])
-                for (sy = [-1, 1])
-                    translate([jb_x0 + 6, out_w - jack_cy(i) + sy * (slot_w / 2 - 1.5) - 1, lid_t - 0.01])
-                        cube([jb_l - 12, 2, out_h - jb_top - clr]);
         }
         // gap in the lip where the USB plug comes in
         translate([wall - 1, out_w / 2 - usb_w / 2, lid_t - 0.02]) cube([3, usb_w, 4]);
@@ -128,7 +129,18 @@ module lid_pegs() {
         }
 }
 
-module lid_full() { lid(); lid_pegs(); }
+// Posts with pegs into each jack board's two holes, between the jack body
+// and the header: they hold the board down and locate it.
+module lid_jack_pegs() {
+    post = out_h - jb_top - clr;
+    for (i = [0 : n_jacks - 1], sy = [-1, 1])
+        translate([out_l - wall - jb_hole_x, out_w - (jack_cy(i) + sy * jb_hole_dy / 2), lid_t - 0.01]) {
+            cylinder(d = 5, h = post);
+            cylinder(d = jb_peg_d, h = post + 1.4);
+        }
+}
+
+module lid_full() { lid(); lid_pegs(); lid_jack_pegs(); }
 
 if (part == "base") base();
 else if (part == "lid") lid_full();
