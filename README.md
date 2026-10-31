@@ -40,3 +40,19 @@ LED: slow blink = not enumerated by a host; solid = a paddle is closed.
     cp build/cw_paddle.uf2 /media/$USER/RP2350/
 
 Built on the Pi 5 with pico-sdk 2.2.0 and Debian `gcc-arm-none-eabi`.
+
+## Case
+
+`case/case.scad` (OpenSCAD, parametric) with ready STLs for 1 or 2 jacks:
+base 87 x 28 x 16 mm (1 jack) or 87 x 43 (2 jacks), press-fit lid. USB out
+one end, jacks out the other. Print both flat, no supports, PETG or PLA.
+The Pico screws to 4 standoffs (M2 x 4-6 self-tapping). Each jack board sits
+on ledges, butts against the jack wall (takes plug pulls), has a stop behind
+it (takes plug pushes), and the lid ribs hold it down. The lid has a thin
+window over the Pico LED.
+
+Check before printing: the jack breakout values marked MEASURE in
+`case.scad` (plug height above the board, offset from centre), then
+re-export: `openscad -D 'part="base"' -D n_jacks=1 -o base.stl case/case.scad`.
+Wires should be soldered (or the Pico's header bent flat): female jumper
+housings on vertical pins won't fit under the lid.
