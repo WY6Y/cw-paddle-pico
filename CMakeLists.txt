@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.13)
+set(PICO_BOARD pico2 CACHE STRING "Board")
+include(pico_sdk_import.cmake)
+project(cw_paddle C CXX ASM)
+pico_sdk_init()
+
+add_executable(cw_paddle src/main.c src/usb_descriptors.c)
+target_include_directories(cw_paddle PRIVATE src)
+target_link_libraries(cw_paddle PRIVATE pico_stdlib pico_unique_id tinyusb_device)
+pico_add_extra_outputs(cw_paddle)
