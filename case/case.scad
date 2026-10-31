@@ -143,10 +143,11 @@ module lid_pegs() {
         }
 }
 
-// Posts with pegs into each jack board's two holes, between the jack body
-// and the header: they hold the board down and locate it.
+// Posts with pegs over each jack board's two holes. Full length (down to the
+// board) kept the first printed lid from closing (2026-10-31), so they stop at
+// the Pico posts' length; the board is held by the base ledges and walls.
 module lid_jack_pegs() {
-    post = out_h - jb_top - clr;
+    post = out_h - pico_top - clr;
     for (i = [0 : n_jacks - 1], sy = [-1, 1])
         translate([out_l - wall - jb_hole_x, out_w - (jack_cy(i) + sy * jb_hole_dy / 2), lid_t - 0.01]) {
             cylinder(d = 5, h = post);
