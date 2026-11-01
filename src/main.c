@@ -6,8 +6,10 @@
 // on open. Two jacks are wired in parallel (OR'd) so either paddle works.
 //
 // Wiring (contacts close to ground, internal pull-ups):
-//   Jack A: tip -> GP2 (pin 4), ring -> GP3 (pin 5), sleeve -> GND (pin 3)
-//   Jack B: tip -> GP4 (pin 6), ring -> GP5 (pin 7), sleeve -> GND (pin 8)
+//   Jack A: GP3 (pin 5) = dit, GP2 (pin 4) = dah, sleeve -> GND (pin 3)
+//   Jack B: GP5 (pin 7) = dit, GP4 (pin 6) = dah, sleeve -> GND (pin 8)
+//   (Swapped 2026-11-01 to match WY6Y's soldered, left-handed paddle; a paddle
+//   that feels backwards can also use the keyer's paddle-swap setting.)
 //
 // LED: on while a paddle is closed; slow blink until the host enumerates it.
 // SysEx F0 7D 57 59 42 F7 ("WYB") reboots into BOOTSEL for re-flashing.
@@ -22,8 +24,8 @@
                                 // mini paddle bounces 4-8 ms; a 40 WPM dit is 30 ms)
 #define RESYNC_US      1000000  // re-send held state if the host drops a note
 
-static const uint DIT_PINS[] = { 2, 4 };
-static const uint DAH_PINS[] = { 3, 5 };
+static const uint DIT_PINS[] = { 3, 5 };
+static const uint DAH_PINS[] = { 2, 4 };
 
 typedef struct {
     const uint *pins;

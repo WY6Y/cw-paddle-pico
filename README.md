@@ -6,10 +6,10 @@ elements, makes sidetone, and keys the HL2.
 
 | Paddle | MIDI (channel 1) | AetherSDR |
 |---|---|---|
-| Dit (tip) | Note 20 On/Off | `leftpaddle` → `cwdit` |
-| Dah (ring) | Note 21 On/Off | `rightpaddle` → `cwdah` |
+| Dit | Note 20 On/Off | `leftpaddle` → `cwdit` |
+| Dah | Note 21 On/Off | `rightpaddle` → `cwdah` |
 
-Board: Raspberry Pi Pico 2 (RP2350). USB ID `2e8a:10ca`, name "WY6Y CW Paddle".
+Board: Raspberry Pi Pico 2 or 2 W (RP2350). USB ID `2e8a:10ca`, name "WY6Y CW Paddle".
 
 ## Wiring
 
@@ -18,26 +18,29 @@ parallel, so either paddle works (the heavy paddle through the 1/4" adapter).
 
 | Jack | Tip (dit) | Ring (dah) | Sleeve |
 |---|---|---|---|
-| A | GP2 (pin 4) | GP3 (pin 5) | GND (pin 3) |
-| B | GP4 (pin 6) | GP5 (pin 7) | GND (pin 8) |
+| A | GP3 (pin 5) | GP2 (pin 4) | GND (pin 3) |
+| B | GP5 (pin 7) | GP4 (pin 6) | GND (pin 8) |
 
 The breakout boards' 5 pins are unlabeled: put a plug in and find T/R/S with
 a continuity meter (the 2 extra pins are usually switch contacts; leave them).
 
-As built for WY6Y (left-handed, Putikeeg mini paddle, jack board pins numbered
-1-5 left to right with the jack opening facing you; found 2026-11-01):
+As built for WY6Y (left-handed, Putikeeg mini paddle, Pico 2 W, soldered
+2026-11-01): jack board pin 1 (common) to GND (pin 3, between GP1 and GP2), the
+two lever pins (2 and 5) to GP2 and GP3. The firmware reads **GP3 as dit and GP2
+as dah** (and GP5 dit / GP4 dah for jack B), swapped 2026-11-01 so the soldered
+paddle feels right. Jack board pins 3 and 4 are switch contacts, not connected.
 
-| Jack board pin | Paddle lever | Pico pin | Sends |
-|---|---|---|---|
-| 1 | common (sleeve) | GND (pin 3, between GP1 and GP2) | |
-| 2 | right lever (thumb) | GP2 (pin 4) | dit, Note 20 |
-| 5 | left lever (finger) | GP3 (pin 5) | dah, Note 21 |
-| 3, 4 | switch contacts | not connected | |
+Use rosin-core solder or an electronics flux only. Plumbing flux (Nokorode,
+Oatey No. 95) left a conductive film that held GP2 low (a stuck dit the
+continuity beeper couldn't find) and broke USB enumeration (`-71`) until the
+boards were washed in soapy water, rinsed with distilled water, and dried.
 
 The mini paddle's contacts bounce 4-8 ms on press; the firmware's 12 ms
 lockout absorbs it.
 
-LED: slow blink = not enumerated by a host; solid = a paddle is closed.
+LED: slow blink = not enumerated by a host; solid = a paddle is closed. On a
+Pico 2 W (WY6Y's board) the LED hangs off the Wi-Fi chip, so it stays dark
+until the firmware is built for `pico2_w`.
 
 ## Test and map
 
