@@ -24,14 +24,33 @@ parallel, so either paddle works (the heavy paddle through the 1/4" adapter).
 The breakout boards' 5 pins are unlabeled: put a plug in and find T/R/S with
 a continuity meter (the 2 extra pins are usually switch contacts; leave them).
 
+As built for WY6Y (left-handed, Putikeeg mini paddle, jack board pins numbered
+1-5 left to right with the jack opening facing you; found 2026-11-01):
+
+| Jack board pin | Paddle lever | Pico pin | Sends |
+|---|---|---|---|
+| 1 | common (sleeve) | GND (pin 3, between GP1 and GP2) | |
+| 2 | right lever (thumb) | GP2 (pin 4) | dit, Note 20 |
+| 5 | left lever (finger) | GP3 (pin 5) | dah, Note 21 |
+| 3, 4 | switch contacts | not connected | |
+
+The mini paddle's contacts bounce 4-8 ms on press; the firmware's 12 ms
+lockout absorbs it.
+
 LED: slow blink = not enumerated by a host; solid = a paddle is closed.
 
 ## Test and map
 
 1. `./paddle_test.py` prints `DIT DOWN/up`, `DAH DOWN/up` as you key.
    Dit and dah swapped? Swap the tip and ring wires (or the keyer's paddle-swap setting).
-2. AetherSDR: MIDI mapping dialog → Import → `wy6y-cw-paddle.map`
-   (or Learn `cwdit`/`cwdah` and press each paddle).
+   The test script holds the MIDI port; quit it before starting AetherSDR.
+2. AetherSDR (v26.10.8): Settings → MIDI Mapping. Port "WY6Y CW Paddle" →
+   Connect, tick Auto-connect. Import... `wy6y-cw-paddle.map` only stores it as a
+   profile: pick `wy6y-cw-paddle` in the Profile box and press **Load**, or
+   nothing is bound (or Learn `cwdit`/`cwdah` and press each paddle).
+   Slice in CW mode; the CW panel's Breakin off = sidetone only, no RF.
+   After the Pico re-enumerates (replug, reflash) AetherSDR doesn't re-attach:
+   press Connect again (or `aconnect 'WY6Y CW Paddle' 'RtMidi Input Client'`).
 
 ## Build and flash
 
