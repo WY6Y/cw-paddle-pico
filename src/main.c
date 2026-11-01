@@ -18,7 +18,8 @@
 #define MIDI_CH        0        // channel 1
 #define NOTE_DIT       20
 #define NOTE_DAH       21
-#define LOCKOUT_US     5000     // ignore contact bounce for 5 ms after an edge
+#define LOCKOUT_US     12000    // ignore contact bounce for 12 ms after an edge (the
+                                // mini paddle bounces 4-8 ms; a 40 WPM dit is 30 ms)
 #define RESYNC_US      1000000  // re-send held state if the host drops a note
 
 static const uint DIT_PINS[] = { 2, 4 };
