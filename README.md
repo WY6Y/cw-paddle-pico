@@ -93,3 +93,28 @@ Wire by soldering to the header pin stubs on the Pico's top side (GP2-GP5,
 GND); jumpers on the pins underneath won't fit in the rails. Check the values
 marked MEASURE in `case.scad` (header plastic, pin length, jack position),
 then re-export: `openscad -D 'part="base"' -D n_jacks=1 -o base.stl case/case.scad`.
+
+## Arduino Uno R3 stand-in (2026-11-01)
+
+A temporary paddle while the Pico is replaced. The R3's USB chip is a serial
+bridge, not a MIDI device, so `uno/uno_paddle/uno_paddle.ino` sends the lever
+state over serial and `uno/uno_bridge.py` on the host opens the same
+"WY6Y CW Paddle" MIDI port (dit Note 20, dah Note 21), so AetherSDR and CyberCW
+need no changes.
+
+- Wiring with dupont jumpers: jack common to GND, dit to D3, dah to D2
+  (same feel as the Pico's GP3/GP2). The Uno's L LED lights while a lever is held.
+- Same safety as the Pico: 12 ms debounce, 5 s stuck-lever cutoff, state re-sent
+  every second; the bridge releases both notes if the Uno goes quiet for 2.5 s or
+  is unplugged.
+- Flash: `arduino-cli compile --fqbn arduino:avr:uno uno/uno_paddle` then
+  `arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno uno/uno_paddle`.
+- Bridge: `python3 uno/uno_bridge.py` (needs `python-rtmidi` and `pyserial`).
+
+Case: `case/uno_case.scad`, STLs `case/uno-base.stl` and `case/uno-lid.stl`,
+about 112 x 63 x 37 mm (base) plus a 2 mm lid. The Uno sits on four standoffs
+with pegs in its mounting holes, USB-B and DC jack out one end, the paddle jack
+out the other. About 28 mm of headroom above the board for duponts standing in
+the headers; lid posts stop 1 mm above the Uno's middle hole and the jack board.
+Check the MEASURE values (USB-B and DC jack positions) against your board
+before printing.
