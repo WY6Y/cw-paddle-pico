@@ -38,9 +38,14 @@ boards were washed in soapy water, rinsed with distilled water, and dried.
 The mini paddle's contacts bounce 4-8 ms on press; the firmware's 12 ms
 lockout absorbs it.
 
-LED: slow blink = not enumerated by a host; solid = a paddle is closed. On a
-Pico 2 W (WY6Y's board) the LED hangs off the Wi-Fi chip, so it stays dark
-until the firmware is built for `pico2_w`.
+LED: slow blink = not enumerated by a host; on = a lever is closed. On a
+Pico 2 W (WY6Y's board) the LED is on the Wi-Fi chip, so use the `pico2_w`
+build (below; no Wi-Fi is started).
+
+Key-down safety: a lever closed over 5 s is a fault (Note Off, then ignored
+until it opens); both levers' state is re-sent every second, released
+included; if notes stop draining to the host for 1.5 s the Pico detaches and
+re-attaches USB; a 1 s hardware watchdog reboots it if the loop stops.
 
 ## Test and map
 
@@ -57,9 +62,14 @@ until the firmware is built for `pico2_w`.
 
 ## Build and flash
 
-    cmake -B build -DPICO_SDK_PATH=$HOME/pico-sdk && make -C build -j4
+    cmake -B build -DPICO_SDK_PATH=$HOME/pico-sdk && make -C build -j4      # Pico 2
+    cmake -B build-w -DPICO_SDK_PATH=$HOME/pico-sdk -DPICO_BOARD=pico2_w \
+        && make -C build-w -j4                                               # Pico 2 W
     ./paddle_test.py bootsel        # or hold BOOTSEL while plugging in
-    cp build/cw_paddle.uf2 /media/$USER/RP2350/
+    cp build/cw_paddle.uf2 /media/$USER/RP2350/      # build-w/ for a Pico 2 W
+
+The W build (~530 KB, it carries the Wi-Fi chip's firmware) needs the SDK's
+`git -C ~/pico-sdk submodule update --init lib/cyw43-driver`.
 
 Built on the Pi 5 with pico-sdk 2.2.0 and Debian `gcc-arm-none-eabi`.
 
