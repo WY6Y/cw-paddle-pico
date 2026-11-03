@@ -18,7 +18,10 @@
 //   - Every RESYNC_US the host gets both levers' state, released included, so
 //     a lost Note Off can't leave the keyer down.
 //   - If notes stop draining to the host for LINK_STALL_US, the USB link is
-//     dropped and re-attached (what a replug did by hand).
+//     dropped and re-attached (what a replug did by hand). Only once the host
+//     has drained more notes than the Pico can hold unread: a host with no
+//     program holding the port open never reads, and that is not a fault
+//     (2026-11-02: it re-attached every ~10 s on an idle Pi).
 //   - A hardware watchdog reboots the Pico if the main loop ever stops.
 //
 // LED: slow blink until the host enumerates it, then on while a lever is
@@ -41,6 +44,9 @@
 #define STUCK_US       5000000  // a lever closed this long is a fault, not keying
 #define LINK_STALL_US  1500000  // notes not draining this long: re-attach USB
 #define RELINK_US      300000   // how long the link stays detached
+// Notes the Pico accepts with nobody reading: the TX FIFO plus one endpoint
+// transfer in flight, 4 bytes per USB-MIDI packet. Past this the host is reading.
+#define UNREAD_NOTES   ((CFG_TUD_MIDI_TX_BUFSIZE + CFG_TUD_MIDI_EP_BUFSIZE) / 4)
 #define WATCHDOG_MS    1000
 
 static const uint DIT_PINS[] = { 3, 5 };
@@ -61,6 +67,7 @@ static paddle_t paddles[] = {
 };
 
 static absolute_time_t stall_since;   // nil while notes are draining
+static uint32_t notes_taken;          // since mount; > UNREAD_NOTES means a reader
 
 static bool keyed(const paddle_t *p) { return p->closed && !p->stuck; }
 
@@ -73,6 +80,7 @@ static void send_note(uint8_t note, bool on) {
     uint8_t msg[3] = { (uint8_t)((on ? 0x90 : 0x80) | MIDI_CH), note, on ? 127 : 0 };
     if (tud_midi_stream_write(0, msg, sizeof msg) == sizeof msg) {
         stall_since = nil_time;
+        if (notes_taken <= UNREAD_NOTES) notes_taken++;
     } else if (is_nil_time(stall_since)) {
         stall_since = get_absolute_time();
     }
@@ -126,8 +134,8 @@ static void read_host(void) {
 
 // Enumerated but not taking notes: detach and re-attach, like a replug.
 static void check_link(void) {
-    if (!tud_mounted()) { stall_since = nil_time; return; }
-    if (is_nil_time(stall_since) ||
+    if (!tud_mounted()) { stall_since = nil_time; notes_taken = 0; return; }
+    if (notes_taken <= UNREAD_NOTES || is_nil_time(stall_since) ||
         absolute_time_diff_us(stall_since, get_absolute_time()) < LINK_STALL_US) return;
     tud_disconnect();
     absolute_time_t until = make_timeout_time_us(RELINK_US);
@@ -137,6 +145,7 @@ static void check_link(void) {
     }
     tud_connect();
     stall_since = nil_time;
+    notes_taken = 0;
 }
 
 static void led_put(bool on) {

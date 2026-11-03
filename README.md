@@ -97,8 +97,9 @@ A stuck key on a transmitter is a real problem, so the firmware guards against i
   is ignored until it opens.
 - Both levers' state is re-sent every second, released included, so a lost
   Note Off can't leave the keyer down.
-- If notes stop reaching the computer for 1.5 s, the Pico detaches and
-  re-attaches USB.
+- If notes stop reaching the computer for 1.5 s after it had been reading
+  them, the Pico detaches and re-attaches USB. With no program holding the
+  port open it just waits (v1.0.0 re-attached every ~10 s in that case).
 - A 1 s hardware watchdog reboots it if its main loop stops.
 - 12 ms debounce (the mini paddle's contacts bounce 4-8 ms).
 
